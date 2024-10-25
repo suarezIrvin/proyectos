@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+    <style>
+        .imageText {
+            display: none;
+        }
+
+        .imageItem:hover .imageText {
+            display: block;
+        }
+
+        .clickable {
+            cursor: pointer;
+        }
+    </style>
+    <title>Application</title>
+</head>
+
+<body>
+
+    <p>Obtener Computadoras</p> <input type="number" id="inputCantidad"><br>
+
+    <p>Imágenes Activadas: <span id="activadasCounter">0</span></p>
+    <p>Imágenes Desactivadas: <span id="desactivadasCounter">10</span></p>
+
+    <br>
+    <div id="imageContainer">
+        <script>
+            // Array para crear computadoras
+            var imageInfo = [
+                { nombre: "computadora 1", tipo: "Mac", serie: "12334" },
+                { nombre: "computadora 2", tipo: "Mac", serie: "12453" },
+                { nombre: "computadora 3", tipo: "Mac", serie: "52345" },
+                { nombre: "computadora 4", tipo: "Mac", serie: "42355" },
+                { nombre: "computadora 5", tipo: "Mac", serie: "67767" },
+                { nombre: "computadora 6", tipo: "Mac", serie: "98485" },
+                { nombre: "computadora 7", tipo: "Mac", serie: "83835" },
+                { nombre: "computadora 8", tipo: "Mac", serie: "84595" },
+                { nombre: "computadora 9", tipo: "Mac", serie: "54366" },
+                { nombre: "computadora 10", tipo: "Mac", serie: "49597" },
+              
+
+            ];
+
+            var activadasCounter = 0;
+            var desactivadasCounter = imageInfo.length;
+
+            document.write('<div class="imageContainer">');
+
+            // Filas de imágenes principales row es filas y col columnas
+            document.write('<div class="imageRow">');
+            for (var col = 0; col < 10; col++) {
+                var index = col;
+                var currentInfo = imageInfo[index % imageInfo.length];
+
+                // Contenedor de imágenes
+                document.write('<div class="imageItem clickable" onclick="toggleImage(this, event)">');
+                document.write('<img class="myImage" src="assets/Desactivado.png" alt="">');
+
+                // Agrega el texto con nombre, tipo y marca debajo de la imagen
+                document.write('<div class="imageText">' +
+                    '<p>Nombre: ' + currentInfo.nombre + '</p>' +
+                    '<p>Tipo: ' + currentInfo.tipo + '</p>' +
+                    '<p>Serie: ' + currentInfo.serie + '</p>' +
+                    '</div>');
+
+                // Agrega una imagen adicional debajo de las otras
+                document.write('<img class="additionalImage" src="assets/Adicional.png" alt="">');
+
+                document.write('</div>');
+            }
+            document.write('</div>');
+
+
+            document.write('<div class="emptyRow"></div>');
+
+            // Resto de las filas duplicadas 
+            for (var row = 0; row < 2; row++) {
+                document.write('<div class="imageRow">');
+                for (var col = 0; col < 10; col++) {
+                    var index = 1 + row * 3 + col;
+                    var currentInfo = imageInfo[index % imageInfo.length];
+
+                    // Crea el contenedor individual para la imagen y texto
+                    document.write('<div class="imageItem clickable" onclick="toggleImage(this, event)">');
+                    document.write('<img class="myImage" src="assets/Desactivado.png" alt="">');
+
+                    // Agrega el texto con nombre, tipo y marca debajo de la imagen las variables deben ser las mismas que el array
+                    document.write('<div class="imageText">' +
+                        '<p>Nombre: ' + currentInfo.nombre + '</p>' +
+                        '<p>Tipo: ' + currentInfo.tipo + '</p>' +
+                        '<p>Serie: ' + currentInfo.serie + '</p>' +
+                        '</div>');
+
+                    // Agrega una imagen adicional debajo de las otras
+                    document.write('<img class="additionalImage" src="assets/Adicional.png" alt="">');
+
+                    document.write('</div>');
+                }
+                document.write('</div>');
+            }
+            document.write('</div>');
+        </script>
+    </div>
+
+    <script>
+        // Obtener imágenes 
+        var images = document.querySelectorAll('.myImage');
+
+        for (var i = 0; i < images.length; i++) {
+            images[i].style.display = 'none';
+        }
+
+        // Función para mostrar las imágenes 
+        function mostrarCantidadDeImagenes(cantidad) {
+            for (var i = 0; i < images.length; i++) {
+                images[i].style.display = i < cantidad ? 'block' : 'none';
+            }
+        }
+
+        // Función para cambiar la imagen 
+        function toggleImage(element, event) {
+
+            event.stopPropagation();
+
+            var image = element.querySelector('.myImage');
+            var currentSrc = image.src;
+            var newSrc = currentSrc.includes('Desactivado.png') ? 'assets/Activado.png' : 'assets/Desactivado.png';
+            image.src = newSrc;
+
+            // Actualizar contadores
+            if (newSrc.includes('Activado.png')) {
+                activadasCounter++;
+                desactivadasCounter--;
+            } else {
+                activadasCounter--;
+                desactivadasCounter++;
+            }
+
+            // Actualizar el texto de los contadores en la página
+            document.getElementById('activadasCounter').innerText = activadasCounter;
+            document.getElementById('desactivadasCounter').innerText = desactivadasCounter;
+        }
+
+        // Ejecutar el evento 
+        var inputCantidad = document.getElementById('inputCantidad');
+        inputCantidad.addEventListener('input', function () {
+            var cantidad = parseInt(inputCantidad.value) || 0;
+
+            // Validar número positivo
+            if (cantidad < 0) {
+                alert('Por favor, inserte un número positivo.');
+                inputCantidad.value = 0;
+                cantidad = 0;
+            }
+
+            mostrarCantidadDeImagenes(cantidad);
+        });
+    </script>
+
+</body>
+
+</html>

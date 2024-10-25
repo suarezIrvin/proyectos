@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+    <style>
+        .imageContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; /* Espacio entre las imágenes */
+        }
+
+        .imageItem {
+            position: relative; /* Agregado para posicionar el texto */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .imageItem img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .imageText {
+            display: none;
+            padding: 10px;
+            background-color: white; 
+            border-radius: 10px;
+            position: absolute;
+            top: 50%; /* Centrar verticalmente */
+            left: 50%; /* Centrar horizontalmente */
+            transform: translate(-50%, -50%); /* Centrar completamente */
+            width: 80%; /* Ajustar el ancho */
+            box-sizing: border-box;
+            transition: opacity 0.3s ease;
+            z-index: 9999; /* Asegurar que esté por encima de las imágenes */
+        }
+
+        .imageItem:hover .imageText {
+            display: block;
+        }
+
+        .clickable {
+            cursor: pointer;
+        }
+
+        /* Estilos para el modal */
+        .modal {
+            display: none; /* Ocultar el modal por defecto */
+            position: fixed; /* Posición fija */
+            z-index: 1; /* Situar el modal por encima de todo */
+            left: 0;
+            top: 0;
+            width: 100%; /* Ancho completo */
+            height: 100%; /* Altura completa */
+            overflow: auto; /* Permitir desplazamiento si el contenido del modal es demasiado grande */
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro translúcido */
+            padding-top: 50px; /* Añadir espacio en la parte superior para los botones */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 5px;
+        }
+
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+    <title>Application</title>
+</head>
+
+<body>
+
+    <p>Computadoras Activas: <span id="activadasCounter">0</span></p>
+    <p>Computadoras Inactivas: <span id="desactivadasCounter">0</span></p>
+
+    <br>
+    <div class="imageContainer" id="imageContainer"></div>
+
+    <!-- Modal para seleccionar el estado -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Seleccionar Estado</h2>
+            <button onclick="updateState(1)">Activado</button>
+            <button onclick="updateState(2)">Desactivado</button>
+            <button onclick="updateState(3)">Fuera de servicio</button> <!-- Nuevo botón para el estado "Fuera de servicio" -->
+        </div>
+    </div>
+
+    <script>
+        var activadasCounter = 0;
+        var desactivadasCounter = 0;
+
+        // Función para realizar polling
+        function startPolling() {
+            fetchComputers(); // Llamar a la función inicialmente
+            setInterval(fetchComputers, 3000); // Realizar la solicitud cada 3 segundos (puedes ajustar este valor según tus necesidades)
+        }
+
+        // Llamar a la función para iniciar el polling
+        startPolling();
+
+        function fetchComputers() {
+            fetch('http://localhost:3005/lista')
+                .then(response => response.json())
+                .then(data => {
+                    var imageContainer = document.getElementById('imageContainer');
+                    imageContainer.innerHTML = '';
+
+                    activadasCounter = 0; // Reiniciar contadores
+                    desactivadasCounter = 0;
+
+                    data.forEach(computer => {
+                        var imageItem = document.createElement('div');
+                        imageItem.classList.add('imageItem', 'clickable');
+                        imageItem.setAttribute('data-computer-id', computer.id);
+                        imageItem.addEventListener('click', function(event) {
+                            openModal(computer.id, computer.estado); // Abrir el modal para seleccionar el estado
+                        });
+
+                        var image = document.createElement('img');
+                        image.classList.add('myImage');
+                        image.src = computer.estado === 1 ? 'assets/Activado.png' : computer.estado === 2 ? 'assets/Desactivado.png' : 'assets/Ocupado.png'; // Cambiado para incluir el estado "Fuera de servicio"
+                        image.alt = '';
+
+                        var imageText = document.createElement('div');
+                        imageText.classList.add('imageText');
+                        imageText.innerHTML = '<p>Nombre: ' + computer.nombre + '</p>' +
+                            '<p>Estado: ' + (computer.estado === 1 ? 'Activado' : computer.estado === 2 ? 'Desactivado' : 'Fuera de servicio') + '</p>' + // Cambiado para incluir el estado "Fuera de servicio"
+                            '<p>Modelo: ' + computer.modelo + '</p>' +
+                            '<p>Serie: ' + computer.serie + '</p>' +
+                            '<p>Mouse: ' + computer.mouse + '</p>' +
+                            '<p>Teclado: ' + computer.teclado + '</p>' +
+                            '<p>Escritorio: ' + computer.escritorio + '</p>';
+
+                        var additionalImage = document.createElement('img');
+                        additionalImage.classList.add('additionalImage');
+                        additionalImage.src = 'assets/Adicional.png';
+                        additionalImage.alt = '';
+
+                        imageItem.appendChild(image);
+                        imageItem.appendChild(imageText);
+                        imageItem.appendChild(additionalImage);
+
+                        imageContainer.appendChild(imageItem);
+
+                        // Incrementar contadores según el estado de la computadora
+                        if (computer.estado === 1) {
+                            activadasCounter++;
+                        } else if (computer.estado === 2) {
+                            desactivadasCounter++;
+                        } else {
+                            
+                        }
+                    });
+
+                    // Actualizar contadores
+                    document.getElementById('activadasCounter').innerText = activadasCounter;
+                    document.getElementById('desactivadasCounter').innerText = desactivadasCounter;
+                })
+                .catch(error => {
+                    console.error('Error fetching computers:', error);
+                    alert('Hubo un error al cargar las computadoras. Por favor, inténtalo de nuevo más tarde.');
+                });
+        }
+
+        // Función para abrir el modal y guardar el ID de la computadora y su estado actual
+        function openModal(computerId, currentState) {
+            document.getElementById('myModal').style.display = 'block';
+            document.getElementById('myModal').setAttribute('data-computer-id', computerId);
+            currentStateToUpdate = currentState;
+        }
+
+        // Función para cerrar el modal
+        function closeModal() {
+            document.getElementById('myModal').style.display = 'none';
+        }
+
+        // Función para enviar la actualización del estado
+        function updateState(newState) {
+            var computerId = document.getElementById('myModal').getAttribute('data-computer-id');
+            closeModal(); // Cerrar el modal
+            fetch(`http://localhost:3005/actualizarEstado/${computerId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    estado: newState
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el estado de la computadora');
+                }
+                // Actualizar el estado en la interfaz si la solicitud es exitosa
+                var image = document.querySelector(`.imageItem[data-computer-id="${computerId}"] .myImage`);
+                image.src = newState === 1 ? 'assets/Activado.png' : newState === 2 ? 'assets/Desactivado.png' : 'assets/Ocupado.png'; // Cambiado para incluir el estado "Fuera de servicio"
+
+                // Actualizar contadores
+                if (newState === 1) {
+                    activadasCounter++;
+                    desactivadasCounter--;
+                } else if (newState === 2) {
+                    activadasCounter--;
+                    desactivadasCounter++;
+                } else {
+                    // No se actualizan los contadores para el estado "Fuera de servicio"
+                }
+                document.getElementById('activadasCounter').innerText = activadasCounter;
+                document.getElementById('desactivadasCounter').innerText = desactivadasCounter;
+            })
+            .catch(error => {
+                console.error('Error updating computer state:', error);
+                alert('Hubo un error al actualizar el estado de la computadora.');
+            });
+        }
+    </script>
+
+</body>
+
+</html>

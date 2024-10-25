@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+   
+    <title>aplicación</title>
+</head>
+
+<body>
+
+    <!-- Nombres de los escritorios -->
+    <div class="deskNames">
+        <div><h3>Escritorio 1</h3></div>
+        <div><h3>Escritorio 2</h3></div>
+        <div><h3>Escritorio 3</h3></div>
+    </div>
+
+    <!-- Contenedores para los escritorios -->
+    <div class="container">
+        <div class="imageContainer" id="imageContainer1" ondrop="drop(event, 1)" ondragover="allowDrop(event)">
+        </div>
+        <div class="imageContainer" id="imageContainer2" ondrop="drop(event, 2)" ondragover="allowDrop(event)">
+        </div>
+        <div class="imageContainer" id="imageContainer3" ondrop="drop(event, 3)" ondragover="allowDrop(event)">
+        </div>
+    </div>
+
+    <script>
+        // Función para permitir el soltar sobre los contenedores
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        // Función para realizar el soltar
+        function drop(event, deskId) {
+            event.preventDefault();
+            var computerId = event.dataTransfer.getData('text/plain'); // Obtener el ID de la computadora arrastrada
+            updateState(computerId, deskId);
+        }
+
+        // Función para actualizar el estado del escritorio en la base de datos
+        function updateState(computerId, deskId) {
+            fetch(`http://localhost:3005/actualizarEscritorio/${computerId}`, { // Corregir la URL para incluir el ID de la computadora
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    escritorio: deskId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el estado del escritorio');
+                }
+                fetchComputers(); // Actualizar la lista de computadoras
+            })
+            .catch(error => {
+                console.error('Error updating computer desk:', error);
+                alert('Hubo un error al actualizar el estado del escritorio de la computadora.');
+            });
+        }
+
+        // Función para actualizar el estado de la computadora y cerrar el modal
+        function updateAndClose(computerId, state) {
+            fetch(`http://localhost:3005/actualizarEstado/${computerId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    estado: state
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el estado de la computadora');
+                }
+                closeModal(); // Cerrar el modal después de actualizar el estado
+                fetchComputers(); // Actualizar la lista de computadoras
+            })
+            .catch(error => {
+                console.error('Error updating computer state:', error);
+                alert('Hubo un error al actualizar el estado de la computadora.');
+            });
+        }
+
+        // Función para mostrar las imágenes de las computadoras
+        function displayComputers(computers) {
+            computers.forEach(computer => {
+                var imageItem = document.createElement('div');
+                imageItem.classList.add('imageItem');
+                var image = document.createElement('img');
+                image.src = computer.estado === 1 ? 'assets/Activado.png' : computer.estado === 2 ? 'assets/Desactivado.png' : 'assets/Ocupado.png'; // Cambiado para incluir el estado "Fuera de servicio"
+                image.alt = computer.nombre;
+                image.setAttribute('draggable', true); // Hacer la imagen arrastrable
+                image.addEventListener('dragstart', function(event) {
+                    event.dataTransfer.setData('text/plain', computer.id); // Guardar el ID de la computadora en el evento de arrastrar
+                });
+
+                // Agregar el nombre de la PC debajo de la imagen
+                var pcName = document.createElement('p');
+                pcName.textContent = computer.nombre;
+
+                imageItem.appendChild(image);
+                imageItem.appendChild(pcName); // Agregar el nombre de la PC
+
+                // Agregar evento click para mostrar todos los datos de la computadora
+                image.addEventListener('click', function() {
+                    showModal(computer);
+                });
+
+                document.getElementById(`imageContainer${computer.escritorio}`).appendChild(imageItem);
+            });
+        }
+
+        // Función para obtener la lista de computadoras del servidor
+        function fetchComputers() {
+            fetch('http://localhost:3005/lista')
+                .then(response => response.json())
+                .then(data => {
+                    // Limpiar los contenedores antes de mostrar las imágenes
+                    document.getElementById('imageContainer1').innerHTML = '';
+                    document.getElementById('imageContainer2').innerHTML = '';
+                    document.getElementById('imageContainer3').innerHTML = '';
+                    displayComputers(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching computers:', error);
+                    alert('Hubo un error al cargar las computadoras. Por favor, inténtalo de nuevo más tarde.');
+                });
+        }
+
+        // Función para iniciar la aplicación
+        function init() {
+            fetchComputers(); // Obtener la lista inicial de computadoras
+            setInterval(fetchComputers, 3000); // Actualizar la lista de computadoras cada 3 segundos
+        }
+
+        // Iniciar la aplicación al cargar la página
+        init();
+
+        // Función para mostrar el modal con los datos de la computadora
+        function showModal(computer) {
+            var modal = document.getElementById('computerModal');
+            modal.style.display = 'block';
+
+            var modalContent = modal.querySelector('.modal-content');
+            modalContent.innerHTML = '<span class="close" onclick="closeModal()">&times;</span>' +
+                '<h2>Información de la Computadora</h2>' +
+                '<p>Nombre: ' + computer.nombre + '</p>' +
+                '<p>Estado: ' + (computer.estado === 1 ? 'Activado' : computer.estado === 2 ? 'Desactivado' : 'Fuera de servicio') + '</p>' +
+                '<p>Modelo: ' + computer.modelo + '</p>' +
+                '<p>Serie: ' + computer.serie + '</p>' +
+                '<p>Mouse: ' + computer.mouse + '</p>' +
+                '<p>Teclado: ' + computer.teclado + '</p>' +
+                '<p>Escritorio: ' + computer.escritorio + '</p>' +
+                '<div class="btn-container">' +
+                '<button onclick="updateAndClose(' + computer.id + ', 1)">Activado</button>' +
+                '<button onclick="updateAndClose(' + computer.id + ', 2)">Desactivado</button>' +
+                '<button onclick="updateAndClose(' + computer.id + ', 3)">Fuera de servicio</button>' +
+                '</div>';
+        }
+
+        // Función para cerrar el modal
+        function closeModal() {
+            var modal = document.getElementById('computerModal');
+            modal.style.display = 'none';
+        }
+
+        // Cuando el usuario hace clic fuera del modal, este se cierra
+        window.onclick = function(event) {
+            var modal = document.getElementById('computerModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+
+    <!-- Modal para mostrar información de la computadora -->
+    <div id="computerModal" class="modal">
+        <div class="modal-content"></div>
+    </div>
+
+</body>
+
+</html>

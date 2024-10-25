@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px; /* Espacio entre los contenedores */
+        }
+
+        .container .imageContainer {
+            border: 2px solid #ccc; /* Borde para los contenedores */
+            padding: 10px; /* Espaciado interno */
+        }
+
+        .container .imageItem {
+            margin-bottom: 10px;
+        }
+
+        .container .imageItem img {
+            max-width: 100%;
+            max-height: 100px; /* Altura máxima de la imagen */
+        }
+    </style>
+    <title>Application</title>
+</head>
+
+<body>
+
+    <!-- Contenedores para los escritorios -->
+    <div class="container">
+        <div class="imageContainer" id="imageContainer1" ondrop="drop(event, 1)" ondragover="allowDrop(event)">
+            <h3>escritorio 1</h3>
+        </div>
+        <div class="imageContainer" id="imageContainer2" ondrop="drop(event, 2)" ondragover="allowDrop(event)">
+            <h3>escritorio 2</h3>
+        </div>
+        <div class="imageContainer" id="imageContainer3" ondrop="drop(event, 3)" ondragover="allowDrop(event)">
+            <h3>escritorio 3</h3>
+        </div>
+    </div>
+
+    <script>
+        // Función para permitir el soltar sobre los contenedores
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        // Función para realizar el soltar
+        function drop(event, deskId) {
+            event.preventDefault();
+            var computerId = event.dataTransfer.getData('text/plain'); // Obtener el ID de la computadora arrastrada
+            updateState(computerId, deskId);
+        }
+
+        // Función para actualizar el estado del escritorio en la base de datos
+        function updateState(computerId, deskId) {
+            fetch(`http://localhost:3005/actualizarEscritorio/${computerId}`, { // Corregir la URL para incluir el ID de la computadora
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    escritorio: deskId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el estado del escritorio');
+                }
+                fetchComputers(); // Actualizar la lista de computadoras
+            })
+            .catch(error => {
+                console.error('Error updating computer desk:', error);
+                alert('Hubo un error al actualizar el estado del escritorio de la computadora.');
+            });
+        }
+
+        // Función para mostrar las imágenes de las computadoras
+        function displayComputers(computers) {
+            computers.forEach(computer => {
+                var imageItem = document.createElement('div');
+                imageItem.classList.add('imageItem');
+                var image = document.createElement('img');
+                image.src = computer.estado === 1 ? 'assets/Activado.png' : computer.estado === 2 ? 'assets/Desactivado.png' : 'assets/Ocupado.png'; // Cambiado para incluir el estado "Fuera de servicio"
+                image.alt = computer.nombre;
+                image.setAttribute('draggable', true); // Hacer la imagen arrastrable
+                image.addEventListener('dragstart', function(event) {
+                    event.dataTransfer.setData('text/plain', computer.id); // Guardar el ID de la computadora en el evento de arrastrar
+                });
+                imageItem.appendChild(image);
+                document.getElementById(`imageContainer${computer.escritorio}`).appendChild(imageItem);
+            });
+        }
+
+        // Función para obtener la lista de computadoras del servidor
+        function fetchComputers() {
+            fetch('http://localhost:3005/lista')
+                .then(response => response.json())
+                .then(data => {
+                    // Limpiar los contenedores antes de mostrar las imágenes
+                    document.getElementById('imageContainer1').innerHTML = '';
+                    document.getElementById('imageContainer2').innerHTML = '';
+                    document.getElementById('imageContainer3').innerHTML = '';
+                    displayComputers(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching computers:', error);
+                    alert('Hubo un error al cargar las computadoras. Por favor, inténtalo de nuevo más tarde.');
+                });
+        }
+
+        // Función para iniciar la aplicación
+        function init() {
+            fetchComputers(); // Obtener la lista inicial de computadoras
+            setInterval(fetchComputers, 3000); // Actualizar la lista de computadoras cada 3 segundos
+        }
+
+        // Iniciar la aplicación al cargar la página
+        init();
+    </script>
+
+</body>
+
+</html>

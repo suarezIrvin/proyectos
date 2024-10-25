@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+   
+
+    <title>Application</title>
+</head>
+<body>
+
+
+   <p>Obtener Computadoras</p> <input type="number"><br>
+   <label for=""></label>
+
+    <br><div id="imageContainer">
+       
+        <script>
+            // Array 
+            var imageInfo = [
+                { nombre: "computadora 1", tipo: "Mac", serie: "12334" },
+                { nombre: "computadora 2", tipo: "Mac", serie: "12453" },
+                { nombre: "computadora 3", tipo: "Mac", serie: "52345" },
+                { nombre: "computadora 4", tipo: "Mac", serie: "42355" },
+                { nombre: "computadora 5", tipo: "Mac", serie: "67767" },
+                { nombre: "computadora 6", tipo: "Mac", serie: "98485" },
+                { nombre: "computadora 7", tipo: "Mac", serie: "83835" },
+                { nombre: "computadora 8", tipo: "Mac", serie: "84595" },
+                { nombre: "computadora 9", tipo: "Mac", serie: "54366" },
+                { nombre: "computadora 10", tipo: "Mac", serie: "49597" },
+            ];
+
+     
+            document.write('<div class="imageContainer">');
+            
+            //filas de la imagenes xd
+            document.write('<div class="imageRow">');
+            for (var col = 0; col < 10; col++) {
+                var index = col;
+                var currentInfo = imageInfo[index % imageInfo.length];
+
+                // Container images
+                document.write('<div class="imageItem">');
+                document.write('<img class="myImage" src="assets/Desactivado.png" alt="">');
+
+                // Agrega el texto con nombre, tipo y marca debajo de la imagen
+                document.write('<div class="imageText">' +
+                    '<p>Nombre: ' + currentInfo.nombre + '</p>' +
+                    '<p>Tipo: ' + currentInfo.tipo + '</p>' +
+                    '<p>Serie: ' + currentInfo.serie + '</p>' +
+                    '</div>');
+
+                // Agrega una imagen adicional debajo de las otras
+                document.write('<img class="additionalImage" src="assets/Adicional.png" alt="">');
+
+                document.write('</div>');
+            }
+            document.write('</div>');
+
+            // Espacio en blanco
+            document.write('<div class="emptyRow"></div>');
+
+            // Resto de las filas 
+            for (var row = 0; row < 2; row++) {
+                document.write('<div class="imageRow">');
+                for (var col = 0; col < 10; col++) {
+                    var index = 1 + row * 3 + col;
+                    var currentInfo = imageInfo[index % imageInfo.length];
+
+                    // Crea el contenedor individual para la imagen y texto
+                    document.write('<div class="imageItem">');
+                    document.write('<img class="myImage" src="assets/Desactivado.png" alt="">');
+
+                    // Agrega el texto con nombre, tipo y marca debajo de la imagen
+                    document.write('<div class="imageText">' +
+                    '<p>Nombre: ' + currentInfo.nombre + '</p>' +
+                    '<p>Tipo: ' + currentInfo.tipo + '</p>' +
+                    '<p>Serie: ' + currentInfo.serie + '</p>' +
+                    '</div>');
+
+                    // Agrega una imagen adicional debajo de las otras
+                    document.write('<img class="additionalImage" src="assets/Adicional.png" alt="">');
+
+                    document.write('</div>');
+                }
+                document.write('</div>');
+            }
+            document.write('</div>');
+        </script>
+    </div>
+
+    <script>
+        // Obténer imagenes 
+        var images = document.querySelectorAll('.myImage');
+
+
+        for (var i = 0; i < images.length; i++) {
+            images[i].addEventListener('click', Active);
+            images[i].addEventListener('dblclick', Desactive);
+        }
+
+        function Active(event) {
+            // Active Image
+            event.target.src = 'assets/Activado.png';
+        }
+
+        function Desactive(event) {
+            // Desactive Image
+            event.target.src = 'assets/Desactivado.png';
+        }
+    </script>
+
+</body>
+</html>

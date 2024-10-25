@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC API</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Estados de las Computadoras</h1>
+    <div id="estados"></div>
+
+    <h2>Agregar Estado</h2>
+    <input type="text" id="nuevo_estado">
+    <button onclick="agregarEstado()">Agregar</button>
+
+    <table id="pc-list">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Modelo</th>
+            <th>Número de Serie</th>
+            <th>Teclado</th>
+            <th>Mouse</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Aquí se agregarán las filas de la tabla dinámicamente -->
+        </tbody>
+      </table>
+      
+
+    <script src="script.js"></script>
+
+    
+</body>
+</html>

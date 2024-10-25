@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+    <style>
+        .imageContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; /* Espacio entre las imágenes */
+        }
+
+        .imageItem {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative; /* Agregado para posicionar el texto */
+        }
+
+        .imageItem img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .imageText {
+            display: none;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            position: absolute;
+            top: 50%; /* Centrar verticalmente */
+            left: 50%; /* Centrar horizontalmente */
+            transform: translate(-50%, -50%); /* Centrar completamente */
+            width: 80%; /* Ajustar el ancho */
+            box-sizing: border-box;
+            transition: opacity 0.3s ease;
+        }
+
+        .imageItem:hover .imageText {
+            display: block;
+        }
+
+        .clickable {
+            cursor: pointer;
+        }
+    </style>
+    <title>Application</title>
+</head>
+
+<body onload="fetchComputers()">
+
+    <p>Computadoras Activas: <span id="activadasCounter">0</span></p>
+    <p>Computadoras Inactivas: <span id="desactivadasCounter">0</span></p>
+
+    <br>
+    <div class="imageContainer" id="imageContainer"></div>
+
+    <script>
+        var activadasCounter = 0;
+        var desactivadasCounter = 0;
+
+        function fetchComputers() {
+            fetch('http://localhost:3003/lista')
+                .then(response => response.json())
+                .then(data => {
+                    var imageContainer = document.getElementById('imageContainer');
+                    imageContainer.innerHTML = '';
+
+                    data.forEach(computer => {
+                        var imageItem = document.createElement('div');
+                        imageItem.classList.add('imageItem', 'clickable');
+                        imageItem.addEventListener('click', function(event) {
+                            toggleImage(this, event);
+                        });
+
+                        var image = document.createElement('img');
+                        image.classList.add('myImage');
+                        image.src = 'assets/Desactivado.png';
+                        image.alt = '';
+
+                        var imageText = document.createElement('div');
+                        imageText.classList.add('imageText');
+                        imageText.innerHTML = '<p>Nombre: ' + computer.nombre + '</p>' +
+                            '<p>Estado: ' + computer.estado + '</p>' +
+                            '<p>Modelo: ' + computer.modelo + '</p>' +
+                            '<p>Serie: ' + computer.serie + '</p>' +
+                            '<p>Mouse: ' + computer.mouse + '</p>' +
+                            '<p>Teclado: ' + computer.teclado + '</p>' +
+                            '<p>Escritorio: ' + computer.escritorio + '</p>';
+
+                        var additionalImage = document.createElement('img');
+                        additionalImage.classList.add('additionalImage');
+                        additionalImage.src = 'assets/Adicional.png';
+                        additionalImage.alt = '';
+
+                        imageItem.appendChild(image);
+                        imageItem.appendChild(imageText);
+                        imageItem.appendChild(additionalImage);
+
+                        imageContainer.appendChild(imageItem);
+
+                        // Incrementar contador de inactivadas
+                        desactivadasCounter++;
+                    });
+
+                    // Actualizar contadores
+                    document.getElementById('activadasCounter').innerText = activadasCounter;
+                    document.getElementById('desactivadasCounter').innerText = desactivadasCounter;
+                })
+                .catch(error => {
+                    console.error('Error fetching computers:', error);
+                    alert('Hubo un error al cargar las computadoras. Por favor, inténtalo de nuevo más tarde.');
+                });
+        }
+
+        function toggleImage(element, event) {
+            event.stopPropagation();
+            var image = element.querySelector('.myImage');
+            var currentSrc = image.src;
+            var newSrc = currentSrc.includes('Desactivado.png') ? 'assets/Activado.png' : 'assets/Desactivado.png';
+            image.src = newSrc;
+
+            // Actualizar contadores
+            if (newSrc.includes('Activado.png')) {
+                activadasCounter++;
+                desactivadasCounter--;
+            } else {
+                activadasCounter--;
+                desactivadasCounter++;
+            }
+
+            document.getElementById('activadasCounter').innerText = activadasCounter;
+            document.getElementById('desactivadasCounter').innerText = desactivadasCounter;
+        }
+    </script>
+
+</body>
+
+</html>
